@@ -21,8 +21,10 @@ namespace OrderSystem.Controllers
         [HttpPost]
         public async Task<IActionResult> PlaceOrder([FromBody] OrderRequest request)
         {
-            var isPlaced = await _orderService.PlaceOrder(request);
-            return Ok(new { IsPlaced = isPlaced });
+            var order = await _orderService.PlaceOrder(request);
+            var orderFromDb = await _orderService.GetOrder(order.Id);
+            var response = new OrdersDTO(orderFromDb);
+            return Ok(response);
         }
 
         [Route(Routes.Orders.Edit)]
@@ -32,8 +34,11 @@ namespace OrderSystem.Controllers
             var orderFromDb = await _orderService.GetNoTrackingAsync(id);
             if (orderFromDb == null) return NotFound();
 
-            var isEditted = await _orderService.EditOrder(request, id);
-            return Ok(new { IsEditted = isEditted });
+            var orderAfterEdit = await _orderService.EditOrder(request, id);
+
+            var newOrder = await _orderService.GetOrder(orderAfterEdit.Id);
+            var response = new OrdersDTO(newOrder);
+            return Ok(response);
         }
 
         [Route(Routes.Orders.Delete)]
